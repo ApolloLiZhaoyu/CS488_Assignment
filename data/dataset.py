@@ -1,12 +1,11 @@
 import os.path as osp
 import csv
-from torch.utils.data import Dataset
 from collections import defaultdict
 
 from utils.config import cfg
 
 
-class ATMDataset(Dataset):
+class ATMDataset(object):
     def __init__(self, mode='train'):
         if mode == 'train':
             self.dataset_name = cfg.TRAIN_DATASET_NAME
@@ -40,10 +39,16 @@ class ATMDataset(Dataset):
     def __getitem__(self, idx):
         return self.dataset[idx]
 
+    def __iter__(self):
+        return iter(self.dataset)
+
 
 if __name__ == '__main__':
     atm = ATMDataset(mode='train')
-    print(len(atm))
+    # print(len(atm))
+    # print(atm[0])
+    # for data in atm:
+    #     print(len(data))
 
 
 
