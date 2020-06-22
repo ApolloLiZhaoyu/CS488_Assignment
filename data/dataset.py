@@ -33,6 +33,11 @@ class ATMDataset(object):
 
             self.dataset[self.atm_name[d['name']] - 1].append(d)
 
+        if mode == 'train':
+            for data in self.dataset:
+                if len(data) > cfg.ADM4.MAX_EVENTS:
+                    self.dataset.remove(data)
+
     def __len__(self):
         return len(self.dataset)
 

@@ -9,12 +9,6 @@ from utils.parse_args import parse_args
 
 
 def cond_intensity(t, events, dim):
-    """
-    :param int t: at time t
-    :param (d, ) events: events in d-dimension
-    :param int dim: a specific dimension
-    :return: conditional intensity for the dim-th dimension
-    """
     exp_decay = [[math.exp(-cfg.W * (t - t_i)) for t_i in d_events] for d_events in events]
     return cfg.MU[dim] + np.sum([cfg.A[d][dim] * exp_decay[d][i] for d in range(cfg.Z) for i in range(len(events[d]))])
 
