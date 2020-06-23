@@ -146,8 +146,8 @@ def train(samples):
             else:
                 print(np.linalg.norm(A - _A))
 
-            end = time.time()
-            print("It takes {} s to run a iteration.".format(end - start))
+        end = time.time()
+        print("It takes {} s to run a iteration.".format(end - start))
 
     return A, mu
 
@@ -160,7 +160,7 @@ def cond_intensity(t, events, dim, A, mu):
 def predict(A, mu, events):
     test_events = [[] for _ in range(cfg.ADM4.U)]
     test_events[events[0]['dim']].append(events[0]['time'])
-    predicted_events = []
+    pred_events = []
     s = 0
     cnt = 1
     while cnt < len(events):
@@ -182,41 +182,49 @@ def predict(A, mu, events):
             event['name'] = events[cnt]['name']
             event['dim'] = d
             event['time'] = s
-            predicted_events.append(event)
+            pred_events.append(event)
             test_events[events[cnt]['dim']].append(events[cnt]['time'])
             cnt += 1
-    return predicted_events
+    return pred_events
 
 
 def test(samples, A, mu):
-    predicted_samples = []
+    pred_samples = []
     for events in samples:
-        predicted_events = predict(A, mu, events)
-        predicted_samples.append(predicted_events)
-    return predicted_samples
+        pred_events = predict(A, mu, events)
+        pred_samples.append(pred_events)
+    return pred_samples
 
 
-def evaluate(predicted_samples, samples):
-    precision = np.zeros(cfg.ADM4.U)
-    recall = np.zeros(cfg.ADM4.U)
-    f1_score = np.zeros(cfg.ADM4.U)
-    TP = np.zeros(cfg.ADM4.U)
-    FP = np.zeros(cfg.ADM4.U)
-    TN = np.zeros(cfg.ADM4.U)
-    FN = np.zeros(cfg.ADM4.U)
+def evaluate(pred_samples, samples):
+    pred_cnt = np.zeros(cfg.ADM4.U)
+    gt_cnt = np.zeros(cfg.ADM4.U)
+    match_cnt = np.zeros(cfg.ADM4.U)
+    MAE = 0
+    cnt = 0
 
-    for predicted_events, events in zip(predicted_samples, samples):
-        for i in range(len(predicted_events)):
-            predicted_event = predicted_events[i]
-            event = events[i + 1]
-            predicted_type = predicted_event['dim']
+    for pred_events, events in zip(pred_samples, samples):
+        events = events[1:]
+        cnt += len(pred_events)
+        for pred_event, event in zip(pred_events, events):
+            pred_type = pred_event['dim']
             gt_type = event['dim']
-
-            print(predicted_type, gt_type)
-        # break
+            pred_cnt[pred_type] += 1
+            gt_cnt[gt_type] += 1
+            if pred_type == gt_type:
+                match_cnt[pred_type] += 1
+            MAE += abs(pred_event['time'] - event['time'])
+            print(pred_event['time'] - event['time'])
     
-    return precision, recall, f1_score
+    print(match_cnt)
+    print(pred_cnt)
+    print(gt_cnt)
 
+    precision = match_cnt / pred_cnt
+    recall = match_cnt / gt_cnt
+    f1_score = 2 * precision * recall / (precision + recall)
+    MAE /= cnt
+    return precision, recall, f1_score, MAE
 
 
 if __name__ == '__main__':
@@ -233,9 +241,11 @@ if __name__ == '__main__':
     A = pickle.load(open('A.pkl', 'rb'))
     mu = pickle.load(open('mu.pkl', 'rb'))
 
-    predicted_samples = test(test_dataset, A, mu)
-    precision, recall, f1_score = evaluate(predicted_samples, test_dataset)
-    print('Precision of the predicted samples is', precision)
-    print('Recall of the predicted samples is', recall)
-    print('F1_score of the predicted samples is', f1_score)
+    pred_samples = test(test_dataset, A, mu)
+    print('Finish predicting samples.')
+    precision, recall, f1_score, MAE = evaluate(pred_samples, test_dataset)
+    print('Precision of the pred samples is {}, avg is {}'.format(precision, precision.mean()))
+    print('Recall of the pred samples is {}, avg is {}'.format(recall, recall.mean()))
+    print('F1_score of the pred samples is {}, avg is {}'.format(f1_score, f1_score.mean()))
+    print('MAE of the pred samples is', MAE)
 
