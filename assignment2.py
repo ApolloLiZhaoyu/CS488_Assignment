@@ -161,17 +161,15 @@ def predict(A, mu, events):
     test_events = [[] for _ in range(cfg.ADM4.U)]
     test_events[events[0]['dim']].append(events[0]['time'])
     pred_events = []
-    s = 0
+    s = events[0]['time']
     cnt = 1
     while cnt < len(events):
         lamb_bar = np.sum([cond_intensity(s, test_events, d, A, mu) for d in range(cfg.ADM4.U)])
         u = np.random.rand()
         w = - math.log(u) / lamb_bar
-        s = s + w
-        if s > cfg.T:
-            break
+        pred_s = s + w
         D = np.random.rand()
-        lamb = [cond_intensity(s, test_events, d, A, mu) for d in range(cfg.ADM4.U)]
+        lamb = [cond_intensity(pred_s, test_events, d, A, mu) for d in range(cfg.ADM4.U)]
         if D * lamb_bar <= np.sum(lamb):
             d = 0
             while d < cfg.ADM4.U:
@@ -181,9 +179,10 @@ def predict(A, mu, events):
             event = dict()
             event['name'] = events[cnt]['name']
             event['dim'] = d
-            event['time'] = s
+            event['time'] = pred_s
             pred_events.append(event)
             test_events[events[cnt]['dim']].append(events[cnt]['time'])
+            s = events[cnt]['time']
             cnt += 1
     return pred_events
 
@@ -214,7 +213,6 @@ def evaluate(pred_samples, samples):
             if pred_type == gt_type:
                 match_cnt[pred_type] += 1
             MAE += abs(pred_event['time'] - event['time'])
-            print(pred_event['time'] - event['time'])
     
     print(match_cnt)
     print(pred_cnt)
