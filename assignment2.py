@@ -9,7 +9,7 @@ from data.dataset import ATMDataset
 
 
 def g(t):
-    return cfg.W * math.exp(-cfg.W * t)
+    return math.exp(-cfg.W * t)
 
 def G(t):
     return -(math.exp(-cfg.W * t) - 1) / cfg.W
