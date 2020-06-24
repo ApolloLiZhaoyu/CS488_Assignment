@@ -24,7 +24,7 @@ __C.EXP_DIR = ''
 __C.EXP_NAME = ''
 
 # Random seed
-__C.RAND_SEED = 2020
+__C.RANDOM_SEED = 2020
 
 # Parameters
 __C.Z = 10

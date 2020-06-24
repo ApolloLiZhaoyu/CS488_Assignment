@@ -9,10 +9,10 @@ from data.dataset import ATMDataset
 
 
 def g(t):
-    return math.exp(-cfg.W * t)
+    return cfg.W * math.exp(-cfg.W * t)
 
 def G(t):
-    return -(math.exp(-cfg.W * t) - 1) / cfg.W
+    return -(math.exp(-cfg.W * t) - 1)
 
 
 def calc_g_diff(events):
@@ -28,7 +28,7 @@ def calc_g_diff(events):
 def calc_g_diff_list(samples):
     g_diff_list = []
     for idx, events in enumerate(samples):
-        print(idx, len(events))
+        # print(idx, len(events))
         g_diff_list.append(calc_g_diff(events))
     return g_diff_list
 
@@ -121,8 +121,8 @@ def train(samples):
     U2 = np.zeros_like(A)
     # g_diff_list = calc_g_diff_list(samples)
     # print('Calculate g_diff complete!')
-    # pickle.dump(g_diff_list, open('g_diff_list.pkl', 'wb'))
-    g_diff_list = pickle.load(open('g_diff_list.pkl', 'rb'))
+    # pickle.dump(g_diff_list, open('output/g_diff_list.pkl', 'wb'))
+    g_diff_list = pickle.load(open('output/g_diff_list.pkl', 'rb'))
     for k in range(cfg.ADM4.ITER_NUM):
         start = time.time()
         print('Iteration', k)
@@ -214,9 +214,9 @@ def evaluate(pred_samples, samples):
                 match_cnt[pred_type] += 1
             MAE += abs(pred_event['time'] - event['time'])
     
-    print(match_cnt)
-    print(pred_cnt)
-    print(gt_cnt)
+    # print(match_cnt)
+    # print(pred_cnt)
+    # print(gt_cnt)
 
     precision = match_cnt / pred_cnt
     recall = match_cnt / gt_cnt
@@ -227,17 +227,17 @@ def evaluate(pred_samples, samples):
 
 if __name__ == '__main__':
     args = parse_args('Use ADM4 algorithm to fit and predict on a ATM dataset.')
-    np.random.seed(0)
+    np.random.seed(cfg.RANDOM_SEED)
 
     train_dataset = ATMDataset(mode='train')
     test_dataset = ATMDataset(mode='test')
 
     # A, mu = train(train_dataset)
-    # pickle.dump(A, open('A.pkl', 'wb'))
-    # pickle.dump(mu, open('mu.pkl', 'wb'))
+    # pickle.dump(A, open('output/A.pkl', 'wb'))
+    # pickle.dump(mu, open('output/mu.pkl', 'wb'))
 
-    A = pickle.load(open('A.pkl', 'rb'))
-    mu = pickle.load(open('mu.pkl', 'rb'))
+    A = pickle.load(open('output/A.pkl', 'rb'))
+    mu = pickle.load(open('output/mu.pkl', 'rb'))
 
     pred_samples = test(test_dataset, A, mu)
     print('Finish predicting samples.')

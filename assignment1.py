@@ -64,7 +64,7 @@ def visualization(events, intensities=None):
 
 if __name__ == '__main__':
     args = parse_args('Simulation of Multi-dimensional Hawkes Process using Thinning Algorithm.')
-    np.random.seed(2020)
+    np.random.seed(cfg.RANDOM_SEED)
 
     if cfg.GEN_DATA:
         for i in range(cfg.SEQ_NUM):
